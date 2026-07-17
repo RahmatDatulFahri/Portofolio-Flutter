@@ -30,7 +30,7 @@ Pastikan Flutter SDK sudah terinstal (`flutter --version`), lalu:
 
 ```bash
 flutter pub get
-flutter run -d chrome
+flutter run -d chrome | flutter run -d web-server --web-port=8080
 ```
 
 ## Cara Update Konten
@@ -59,10 +59,12 @@ Ganti `NAMA_REPO_KAMU` dengan nama repository GitHub kamu persis.
 ## Deploy ke GitHub Pages (Otomatis)
 
 Repo ini sudah dilengkapi `.github/workflows/deploy.yml` yang otomatis:
+
 1. Build project setiap ada push ke branch `main`
 2. Deploy hasil build ke branch `gh-pages`
 
 **Langkah setup:**
+
 1. Buat repository baru di GitHub, beri nama misalnya `portfolio-flutter`
 2. **Edit `--base-href` di `.github/workflows/deploy.yml`** agar sesuai nama repo kamu
 3. Push seluruh project ini ke branch `main`:
