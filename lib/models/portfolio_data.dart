@@ -15,18 +15,53 @@ class ExperienceItem {
   });
 }
 
-/// Model untuk satu project di grid Projects.
+/// Satu layar dalam galeri mockup UI project.
+///
+/// [imagePath] bersifat OPSIONAL. Kalau null (belum diisi), halaman detail
+/// akan otomatis menampilkan placeholder "MOCKUP BELUM DITAMBAHKAN". Begitu
+/// kamu punya screenshot asli, cukup isi path-nya di sini -- tidak perlu
+/// ubah kode UI sama sekali.
+///
+/// Cara pakai:
+/// 1. Taruh file gambar di assets/images/mockups/nama_file.png
+/// 2. Isi imagePath: 'assets/images/mockups/nama_file.png'
+class MockupScreen {
+  final String label;
+  final String? imagePath;
+
+  const MockupScreen({required this.label, this.imagePath});
+}
+
+/// Model untuk satu project. Dipakai baik untuk card ringkas di grid
+/// Projects section, maupun untuk halaman detail lengkap saat card diklik.
 class ProjectItem {
   final String index; // "P/01"
   final String title;
-  final String techStack;
+  final String
+      techStack; // ringkasan singkat untuk card grid, mis. "FLUTTER · BLOC · DIO"
   final String githubUrl;
+
+  // Field tambahan khusus untuk halaman detail:
+  final String category; // mis. "Company Management System"
+  final String overview; // ringkasan konteks project (2-3 kalimat)
+  final String role; // mis. "Mobile Developer · Magang"
+  final String duration; // mis. "6 bulan (Feb–Agu 2024) · Batam, Onsite"
+  final List<String> techStackDetailed; // list terpisah untuk chip tags
+  final List<String> implementationPoints; // detail teknis apa yang dikerjakan
+  final List<MockupScreen> mockups; // galeri layar + path gambar (opsional)
 
   const ProjectItem({
     required this.index,
     required this.title,
     required this.techStack,
     required this.githubUrl,
+    required this.category,
+    required this.overview,
+    required this.role,
+    required this.duration,
+    required this.techStackDetailed,
+    required this.implementationPoints,
+    required this.mockups,
   });
 }
 
@@ -67,8 +102,7 @@ class PortfolioData {
   static const String location = 'Sleman, Yogyakarta';
   static const String github = 'github.com/RahmatDatulFahri';
   static const String githubUrl = 'https://github.com/RahmatDatulFahri';
-  static const String linkedin =
-      'linkedin.com/in/rahmat-datul-fahri-291553293';
+  static const String linkedin = 'linkedin.com/in/rahmat-datul-fahri-291553293';
   static const String linkedinUrl =
       'https://www.linkedin.com/in/rahmat-datul-fahri-291553293/';
 
@@ -119,24 +153,120 @@ class PortfolioData {
       title: 'App Reporting System',
       techStack: 'FLUTTER · BLOC · DIO · CLEAN ARCHITECTURE',
       githubUrl: githubUrl,
+      category: 'Company Management System',
+      overview: 'Aplikasi reporting internal untuk PT. Koding Teknologi Asia '
+          '(Udacoding), mencakup absensi digital, laporan kinerja, dan '
+          'manajemen izin karyawan dalam satu platform terintegrasi.',
+      role: 'Mobile Developer · Magang',
+      duration: '6 bulan (Feb–Agu 2024) · Batam, Onsite',
+      techStackDetailed: [
+        'Flutter',
+        'Dart',
+        'BLoC',
+        'Clean Architecture',
+        'Dio',
+        'REST API',
+        'Bearer Token Auth',
+      ],
+      implementationPoints: [
+        'Menerapkan Clean Architecture dengan BLoC sebagai state management, memisahkan logika bisnis dari UI agar kode modular dan mudah dikembangkan.',
+        'Merancang routing & navigasi antar halaman (dashboard, absensi, laporan, penggajian) menggunakan Navigator agar alur aplikasi tetap terstruktur.',
+        'Mengimplementasikan form input dan validasi data dengan memperhatikan null safety dan async/await untuk mencegah crash.',
+        'Mengintegrasikan REST API menggunakan Dio, termasuk penanganan error, loading state, dan autentikasi Bearer Token.',
+        'Berkolaborasi lewat pull request dan code review, termasuk melakukan resolve conflict secara mandiri sesuai arahan senior developer.',
+      ],
+      mockups: [
+        MockupScreen(label: 'Splash', imagePath: null),
+        MockupScreen(label: 'Login', imagePath: null),
+        MockupScreen(label: 'Home Dashboard', imagePath: null),
+        MockupScreen(label: 'Laporan', imagePath: null),
+      ],
     ),
     ProjectItem(
       index: 'P/02',
       title: 'E-AlBaik Store',
       techStack: 'FLUTTER · FIGMA-TO-CODE · E-COMMERCE',
       githubUrl: githubUrl,
+      category: 'E-Commerce Application',
+      overview: 'Aplikasi e-commerce dengan fitur Wishlist dan My Order, '
+          'dikembangkan berdasarkan desain UI/UX tim Figma perusahaan.',
+      role: 'Mobile Developer · Magang',
+      duration: 'PT. Koding Teknologi Asia · Batam, Onsite',
+      techStackDetailed: [
+        'Flutter',
+        'Figma-to-Code',
+        'Custom Widgets',
+        'Coding Standard',
+      ],
+      implementationPoints: [
+        'Mengembangkan tampilan dan komponen UI menggunakan Flutter widgets, mengacu pada desain Figma tim UI/UX.',
+        'Membangun fitur Wishlist dan My Order sesuai spesifikasi desain yang ditentukan.',
+        'Menerapkan coding standard dan struktur folder project (TextWidget, TextStyleUtils, SizingUtil) sesuai panduan senior developer.',
+        'Melakukan push kode berkala ke GitHub dan berkolaborasi lewat pull request & code review, termasuk menangani resolve conflict.',
+      ],
+      mockups: [
+        MockupScreen(label: 'Home', imagePath: null),
+        MockupScreen(label: 'Product Detail', imagePath: null),
+        MockupScreen(label: 'Wishlist', imagePath: null),
+      ],
     ),
     ProjectItem(
       index: 'P/03',
       title: 'App JHEIN',
       techStack: 'FLUTTER · REST API · MOSQUE INFO SYSTEM',
       githubUrl: githubUrl,
+      category: 'Mosque Information System',
+      overview: 'Aplikasi informasi berbasis masjid untuk COEDEV Technology, '
+          'mencakup jadwal sholat, info masjid, dan donasi — dikembangkan '
+          'penuh dari desain UI/UX menjadi aplikasi Flutter yang responsif.',
+      role: 'Mobile Developer · Magang',
+      duration: '2 bulan (Mei–Jun 2024) · Malaysia, Remote',
+      techStackDetailed: [
+        'Flutter',
+        'REST API',
+        'Responsive Design',
+        'Figma to Flutter',
+      ],
+      implementationPoints: [
+        'Bertanggung jawab penuh membangun seluruh tampilan, fitur, dan navigasi aplikasi dari desain UI/UX menjadi aplikasi Flutter yang responsif.',
+        'Menguji aplikasi secara berkala untuk memastikan tampilan responsif di berbagai ukuran layar HP, serta memperbaiki bug yang ditemukan.',
+        'Berkoordinasi dengan tim Backend untuk menentukan data dan endpoint API yang dibutuhkan sesuai kebutuhan fitur.',
+        'Mengintegrasikan REST API untuk menyinkronkan data antara web dan aplikasi mobile, memastikan informasi (jadwal sholat, info masjid, donasi) tetap konsisten.',
+      ],
+      mockups: [
+        MockupScreen(label: 'Home', imagePath: null),
+        MockupScreen(label: 'Jadwal Sholat', imagePath: null),
+        MockupScreen(label: 'Donasi', imagePath: null),
+      ],
     ),
     ProjectItem(
       index: 'P/04',
       title: 'Sistem Informasi App Reporting',
       techStack: 'FLUTTER · FIREBASE · FIRESTORE · BLOC — TUGAS AKHIR D3',
       githubUrl: githubUrl,
+      category: 'Tugas Akhir D3 — Politeknik Negeri Padang',
+      overview: 'Aplikasi mobile reporting sebagai tugas akhir, mencakup fitur '
+          'absensi digital, laporan kinerja, dan manajemen izin dengan '
+          'penyimpanan data real-time.',
+      role: 'Pengembang Individu (Tugas Akhir)',
+      duration: '2024 · Politeknik Negeri Padang',
+      techStackDetailed: [
+        'Flutter',
+        'Firebase Auth',
+        'Firestore',
+        'BLoC',
+        'Clean Architecture',
+      ],
+      implementationPoints: [
+        'Merancang dan mengembangkan aplikasi mobile reporting menggunakan Flutter, mencakup fitur absensi digital, laporan kinerja, dan manajemen izin.',
+        'Menggunakan Firebase Authentication untuk sistem login dan Firestore untuk penyimpanan data laporan secara real-time.',
+        'Menerapkan arsitektur Clean Architecture dengan BLoC sebagai layer presentasi, menghasilkan kode yang terstruktur dan mudah diuji.',
+      ],
+      mockups: [
+        MockupScreen(label: 'Login', imagePath: null),
+        MockupScreen(label: 'Dashboard', imagePath: null),
+        MockupScreen(label: 'Laporan Kinerja', imagePath: null),
+      ],
     ),
   ];
 
