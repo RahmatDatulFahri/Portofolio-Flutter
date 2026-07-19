@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// Model untuk satu entri pengalaman kerja (magang).
 class ExperienceItem {
   final String period;
@@ -32,6 +34,16 @@ class MockupScreen {
   const MockupScreen({required this.label, this.imagePath});
 }
 
+/// Satu fitur unggulan project, ditampilkan di grid "Key Features".
+class FeatureItem {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  const FeatureItem(
+      {required this.icon, required this.title, required this.description});
+}
+
 /// Model untuk satu project. Dipakai baik untuk card ringkas di grid
 /// Projects section, maupun untuk halaman detail lengkap saat card diklik.
 class ProjectItem {
@@ -45,10 +57,18 @@ class ProjectItem {
   final String category; // mis. "Company Management System"
   final String overview; // ringkasan konteks project (2-3 kalimat)
   final String role; // mis. "Mobile Developer · Magang"
-  final String duration; // mis. "6 bulan (Feb–Agu 2024) · Batam, Onsite"
+  final String company; // mis. "PT. Koding Teknologi Asia · Batam, Onsite"
+  final String
+      duration; // mis. "6 bulan (Feb–Agu 2024)" -- HARUS berupa rentang waktu, bukan nama perusahaan
   final List<String> techStackDetailed; // list terpisah untuk chip tags
   final List<String> implementationPoints; // detail teknis apa yang dikerjakan
   final List<MockupScreen> mockups; // galeri layar + path gambar (opsional)
+
+  // Field "case study" (jujur, tanpa data fiktif):
+  final String problem; // konteks masalah yang melatarbelakangi project
+  final String solution; // pendekatan/solusi teknis yang diambil
+  final List<FeatureItem> keyFeatures; // fitur utama aplikasi
+  final String teamNote; // konteks kerja tim (tanpa nama fiktif)
 
   const ProjectItem({
     required this.index,
@@ -58,10 +78,15 @@ class ProjectItem {
     required this.category,
     required this.overview,
     required this.role,
+    required this.company,
     required this.duration,
     required this.techStackDetailed,
     required this.implementationPoints,
     required this.mockups,
+    required this.problem,
+    required this.solution,
+    required this.keyFeatures,
+    required this.teamNote,
   });
 }
 
@@ -158,7 +183,8 @@ class PortfolioData {
           '(Udacoding), mencakup absensi digital, laporan kinerja, dan '
           'manajemen izin karyawan dalam satu platform terintegrasi.',
       role: 'Mobile Developer · Magang',
-      duration: '6 bulan (Feb–Agu 2024) · Batam, Onsite',
+      company: 'PT. Koding Teknologi Asia (Udacoding) · Batam, Onsite',
+      duration: '6 bulan (Feb–Agu 2024)',
       techStackDetailed: [
         'Flutter',
         'Dart',
@@ -181,6 +207,37 @@ class PortfolioData {
         MockupScreen(label: 'Home Dashboard', imagePath: null),
         MockupScreen(label: 'Laporan', imagePath: null),
       ],
+      problem: 'PT. Koding Teknologi Asia membutuhkan sistem internal untuk '
+          'mengelola absensi, laporan kinerja, dan pengajuan izin karyawan '
+          'yang sebelumnya masih tersebar di proses manual, menyulitkan '
+          'monitoring bagi tim HR dan manajemen.',
+      solution: 'Membangun aplikasi mobile dengan Clean Architecture dan BLoC '
+          'agar kode mudah dikembangkan tim, serta mengintegrasikan REST '
+          'API (Dio) dengan autentikasi Bearer Token untuk sinkronisasi '
+          'data absensi, laporan, dan penggajian secara real-time.',
+      keyFeatures: [
+        FeatureItem(
+            icon: Icons.fingerprint,
+            title: 'Absensi Digital',
+            description:
+                'Pencatatan kehadiran karyawan langsung dari aplikasi mobile.'),
+        FeatureItem(
+            icon: Icons.bar_chart,
+            title: 'Laporan Kinerja',
+            description:
+                'Ringkasan performa kerja yang bisa diakses kapan saja.'),
+        FeatureItem(
+            icon: Icons.assignment_turned_in,
+            title: 'Manajemen Izin',
+            description: 'Pengajuan dan approval izin/cuti dalam satu alur.'),
+        FeatureItem(
+            icon: Icons.payments,
+            title: 'Info Penggajian',
+            description: 'Akses slip gaji dan riwayat pembayaran karyawan.'),
+      ],
+      teamNote: 'Dikerjakan dalam tim lintas peran (Project Manager, Web '
+          'Developer, Mobile Developer) dengan pembagian tugas berdasarkan '
+          'planning awal project.',
     ),
     ProjectItem(
       index: 'P/02',
@@ -191,7 +248,8 @@ class PortfolioData {
       overview: 'Aplikasi e-commerce dengan fitur Wishlist dan My Order, '
           'dikembangkan berdasarkan desain UI/UX tim Figma perusahaan.',
       role: 'Mobile Developer · Magang',
-      duration: 'PT. Koding Teknologi Asia · Batam, Onsite',
+      company: 'PT. Koding Teknologi Asia (Udacoding) · Batam, Onsite',
+      duration: '1 bulan (Jul–Agu 2024)',
       techStackDetailed: [
         'Flutter',
         'Figma-to-Code',
@@ -209,6 +267,33 @@ class PortfolioData {
         MockupScreen(label: 'Product Detail', imagePath: null),
         MockupScreen(label: 'Wishlist', imagePath: null),
       ],
+      problem:
+          'Tim membutuhkan implementasi UI aplikasi e-commerce yang presisi '
+          'sesuai desain Figma, termasuk fitur Wishlist dan My Order, '
+          'dengan struktur kode yang konsisten mengikuti coding standard '
+          'perusahaan.',
+      solution: 'Mengimplementasikan seluruh komponen UI menggunakan custom '
+          'Flutter widget, mengikuti struktur folder dan penamaan '
+          '(TextWidget, TextStyleUtils, SizingUtil) sesuai panduan senior '
+          'developer, serta aktif berkolaborasi lewat code review.',
+      keyFeatures: [
+        FeatureItem(
+            icon: Icons.storefront,
+            title: 'Katalog Produk',
+            description: 'Tampilan produk sesuai desain Figma tim UI/UX.'),
+        FeatureItem(
+            icon: Icons.favorite_border,
+            title: 'Wishlist',
+            description: 'Simpan produk favorit untuk dibeli nanti.'),
+        FeatureItem(
+            icon: Icons.receipt_long,
+            title: 'My Order',
+            description: 'Pantau status dan riwayat pesanan pengguna.'),
+      ],
+      teamNote:
+          'Berkolaborasi dengan senior developer melalui pull request dan '
+          'code review, termasuk menangani resolve conflict secara '
+          'mandiri.',
     ),
     ProjectItem(
       index: 'P/03',
@@ -220,7 +305,8 @@ class PortfolioData {
           'mencakup jadwal sholat, info masjid, dan donasi — dikembangkan '
           'penuh dari desain UI/UX menjadi aplikasi Flutter yang responsif.',
       role: 'Mobile Developer · Magang',
-      duration: '2 bulan (Mei–Jun 2024) · Malaysia, Remote',
+      company: 'COEDEV Technology · Malaysia, Remote',
+      duration: '2 bulan (Mei–Jun 2024)',
       techStackDetailed: [
         'Flutter',
         'REST API',
@@ -238,6 +324,31 @@ class PortfolioData {
         MockupScreen(label: 'Jadwal Sholat', imagePath: null),
         MockupScreen(label: 'Donasi', imagePath: null),
       ],
+      problem: 'COEDEV Technology membutuhkan aplikasi informasi masjid yang '
+          'mudah diakses jamaah untuk melihat jadwal sholat, info kegiatan '
+          'masjid, dan donasi secara digital — dikembangkan penuh dari '
+          'tahap desain hingga aplikasi jadi.',
+      solution:
+          'Bertanggung jawab penuh membangun seluruh tampilan, fitur, dan '
+          'navigasi dari desain UI/UX menjadi aplikasi Flutter yang '
+          'responsif, sekaligus berkoordinasi dengan tim Backend untuk '
+          'endpoint API yang dibutuhkan.',
+      keyFeatures: [
+        FeatureItem(
+            icon: Icons.access_time,
+            title: 'Jadwal Sholat',
+            description: 'Info waktu sholat yang selalu update.'),
+        FeatureItem(
+            icon: Icons.mosque,
+            title: 'Info Masjid',
+            description: 'Informasi kegiatan dan pengumuman masjid.'),
+        FeatureItem(
+            icon: Icons.volunteer_activism,
+            title: 'Donasi',
+            description: 'Fitur donasi digital yang mudah diakses jamaah.'),
+      ],
+      teamNote: 'Bekerja secara remote, berkoordinasi dengan tim Backend untuk '
+          'memastikan data API sesuai kebutuhan fitur aplikasi.',
     ),
     ProjectItem(
       index: 'P/04',
@@ -249,7 +360,8 @@ class PortfolioData {
           'absensi digital, laporan kinerja, dan manajemen izin dengan '
           'penyimpanan data real-time.',
       role: 'Pengembang Individu (Tugas Akhir)',
-      duration: '2024 · Politeknik Negeri Padang',
+      company: 'Politeknik Negeri Padang',
+      duration: '2024',
       techStackDetailed: [
         'Flutter',
         'Firebase Auth',
@@ -267,6 +379,29 @@ class PortfolioData {
         MockupScreen(label: 'Dashboard', imagePath: null),
         MockupScreen(label: 'Laporan Kinerja', imagePath: null),
       ],
+      problem: 'Sebagai tugas akhir D3, dibutuhkan aplikasi reporting mandiri '
+          'yang mencakup absensi digital, laporan kinerja, dan manajemen '
+          'izin, dengan penyimpanan data yang real-time dan aman.',
+      solution: 'Merancang dan mengembangkan aplikasi secara individu '
+          'menggunakan Flutter dengan Clean Architecture dan BLoC, serta '
+          'Firebase Authentication dan Firestore untuk autentikasi dan '
+          'penyimpanan data real-time.',
+      keyFeatures: [
+        FeatureItem(
+            icon: Icons.fingerprint,
+            title: 'Absensi Digital',
+            description: 'Pencatatan kehadiran dengan penyimpanan real-time.'),
+        FeatureItem(
+            icon: Icons.bar_chart,
+            title: 'Laporan Kinerja',
+            description: 'Ringkasan performa berbasis data Firestore.'),
+        FeatureItem(
+            icon: Icons.assignment_turned_in,
+            title: 'Manajemen Izin',
+            description: 'Alur pengajuan izin yang terintegrasi.'),
+      ],
+      teamNote: 'Dikerjakan secara individu sebagai proyek tugas akhir, dari '
+          'tahap perancangan hingga implementasi penuh.',
     ),
   ];
 
