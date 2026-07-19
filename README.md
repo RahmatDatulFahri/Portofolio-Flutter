@@ -48,6 +48,31 @@ menyentuh file widget.
    Image.asset('assets/images/profile.jpg', fit: BoxFit.cover)
    ```
 
+## Cara Menambahkan Screenshot Mockup UI di Halaman Detail Project
+
+Setiap project punya galeri mockup UI di halaman detailnya (muncul saat
+card project di-klik "LIHAT DETAIL"). Menambahkan screenshot asli **tidak
+perlu edit kode UI sama sekali** — cukup 2 langkah:
+
+1. Simpan screenshot di `assets/images/mockups/`, contoh:
+   ```
+   assets/images/mockups/app_reporting_splash.png
+   assets/images/mockups/app_reporting_login.png
+   ```
+2. Buka `lib/models/portfolio_data.dart`, cari project yang mau diisi,
+   lalu isi `imagePath` di dalam `mockups:` (yang tadinya `null`):
+   ```dart
+   mockups: [
+     MockupScreen(label: 'Splash', imagePath: 'assets/images/mockups/app_reporting_splash.png'),
+     MockupScreen(label: 'Login', imagePath: 'assets/images/mockups/app_reporting_login.png'),
+     MockupScreen(label: 'Home Dashboard', imagePath: null), // masih placeholder
+   ],
+   ```
+
+Selama `imagePath` masih `null` (atau filenya belum ada di folder), halaman
+detail otomatis menampilkan placeholder "MOCKUP BELUM DITAMBAHKAN" — jadi
+aman diisi bertahap, tidak akan bikin aplikasi crash.
+
 ## Cara Build untuk Production
 
 ```bash
