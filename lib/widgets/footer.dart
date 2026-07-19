@@ -15,16 +15,14 @@ class Footer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile =
-        MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
+    final isMobile = MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
 
     return Container(
       width: double.infinity,
       color: AppColors.black,
       child: Center(
         child: ConstrainedBox(
-          constraints:
-              const BoxConstraints(maxWidth: AppSpacing.maxContentWidth),
+          constraints: const BoxConstraints(maxWidth: AppSpacing.maxContentWidth),
           child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: isMobile ? AppSpacing.md : AppSpacing.xl,
@@ -40,35 +38,14 @@ class Footer extends StatelessWidget {
                 Row(
                   children: [
                     IconButton(
-                      icon: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                        ),
-                        child: Image.asset(
-                          'assets/icons/github.png',
-                          width: 22,
-                          height: 22,
-                        ),
-                      ),
+                      icon: const Icon(Icons.code, color: Colors.white, size: 20),
                       onPressed: () => _openUrl(PortfolioData.githubUrl),
                       tooltip: 'GitHub',
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
                     ),
-                    const SizedBox(width: AppSpacing.sm),
                     IconButton(
-                      icon: Image.asset(
-                        'assets/icons/linkedin.png',
-                        width: 22,
-                        height: 22,
-                      ),
+                      icon: const Icon(Icons.business_center, color: Colors.white, size: 20),
                       onPressed: () => _openUrl(PortfolioData.linkedinUrl),
                       tooltip: 'LinkedIn',
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
                     ),
                   ],
                 ),
