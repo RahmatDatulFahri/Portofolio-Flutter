@@ -34,8 +34,7 @@ class ProjectsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile =
-        MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
+    final isMobile = MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
     final columns = isMobile ? 1 : 2;
     final rows = _chunkIntoRows(PortfolioData.projects, columns);
 
@@ -54,8 +53,7 @@ class ProjectsSection extends StatelessWidget {
             ),
             child: Column(
               children: [
-                for (final rowItems in rows)
-                  _buildRow(context, rowItems, columns),
+                for (final rowItems in rows) _buildRow(context, rowItems, columns),
               ],
             ),
           ),
@@ -77,18 +75,15 @@ class ProjectsSection extends StatelessWidget {
   /// semua card rata atas (top-aligned), dan masing-masing bebas punya
   /// tinggi sesuai kontennya sendiri -> tidak ada mekanisme yang bisa
   /// "salah hitung" dan menyebabkan overflow.
-  Widget _buildRow(
-      BuildContext context, List<ProjectItem> rowItems, int columns) {
+  Widget _buildRow(BuildContext context, List<ProjectItem> rowItems, int columns) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final project in rowItems)
-          Expanded(child: _buildProjectCard(context, project)),
+        for (final project in rowItems) Expanded(child: _buildProjectCard(context, project)),
         // Baris terakhir dengan jumlah project ganjil di layout 2 kolom:
         // isi slot kosong supaya card tidak melebar penuh 2 kolom.
         if (rowItems.length < columns)
-          for (var i = 0; i < columns - rowItems.length; i++)
-            const Expanded(child: SizedBox()),
+          for (var i = 0; i < columns - rowItems.length; i++) const Expanded(child: SizedBox()),
       ],
     );
   }
