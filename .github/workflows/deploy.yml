@@ -31,7 +31,7 @@ jobs:
       # Contoh: jika repo bernama "portfolio-flutter", maka base-href
       # harus "/portfolio-flutter/". Ganti sesuai nama repo kamu.
       - name: Build web
-        run: flutter build web --release --base-href "/Portofolio-Flutter/"
+        run: flutter build web --release --base-href "/Portfolio-Flutter/"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
