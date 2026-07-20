@@ -70,6 +70,13 @@ class ProjectItem {
   final List<FeatureItem> keyFeatures; // fitur utama aplikasi
   final String teamNote; // konteks kerja tim (tanpa nama fiktif)
 
+  // Field untuk hero (icon ilustrasi + badge status/platform):
+  final IconData heroIcon; // icon representatif project (bukan ilustrasi emoji)
+  final String platform; // JUJUR: cuma "Android" karena CV sebut build APK,
+  // bukan klaim iOS/Web yang tidak terbukti dikerjakan
+  final String statusLabel; // mis. "Selesai" -- semua project magang ini
+  // memang sudah selesai dikerjakan, bukan klaim fiktif
+
   const ProjectItem({
     required this.index,
     required this.title,
@@ -87,6 +94,9 @@ class ProjectItem {
     required this.solution,
     required this.keyFeatures,
     required this.teamNote,
+    required this.heroIcon,
+    required this.platform,
+    required this.statusLabel,
   });
 }
 
@@ -94,11 +104,15 @@ class ProjectItem {
 class SkillGroup {
   final String index;
   final String title;
+  final IconData icon;
+  final String description;
   final List<String> items;
 
   const SkillGroup({
     required this.index,
     required this.title,
+    required this.icon,
+    required this.description,
     required this.items,
   });
 }
@@ -238,6 +252,9 @@ class PortfolioData {
       teamNote: 'Dikerjakan dalam tim lintas peran (Project Manager, Web '
           'Developer, Mobile Developer) dengan pembagian tugas berdasarkan '
           'planning awal project.',
+      heroIcon: Icons.assignment_outlined,
+      platform: 'Android',
+      statusLabel: 'Selesai',
     ),
     ProjectItem(
       index: 'P/02',
@@ -249,7 +266,7 @@ class PortfolioData {
           'dikembangkan berdasarkan desain UI/UX tim Figma perusahaan.',
       role: 'Mobile Developer · Magang',
       company: 'PT. Koding Teknologi Asia (Udacoding) · Batam, Onsite',
-      duration: '1 bulan (Jul–Agu 2024)',
+      duration: '6 bulan (Feb–Agu 2024)',
       techStackDetailed: [
         'Flutter',
         'Figma-to-Code',
@@ -294,6 +311,9 @@ class PortfolioData {
           'Berkolaborasi dengan senior developer melalui pull request dan '
           'code review, termasuk menangani resolve conflict secara '
           'mandiri.',
+      heroIcon: Icons.storefront_outlined,
+      platform: 'Android',
+      statusLabel: 'Selesai',
     ),
     ProjectItem(
       index: 'P/03',
@@ -349,6 +369,9 @@ class PortfolioData {
       ],
       teamNote: 'Bekerja secara remote, berkoordinasi dengan tim Backend untuk '
           'memastikan data API sesuai kebutuhan fitur aplikasi.',
+      heroIcon: Icons.mosque_outlined,
+      platform: 'Android',
+      statusLabel: 'Selesai',
     ),
     ProjectItem(
       index: 'P/04',
@@ -402,6 +425,9 @@ class PortfolioData {
       ],
       teamNote: 'Dikerjakan secara individu sebagai proyek tugas akhir, dari '
           'tahap perancangan hingga implementasi penuh.',
+      heroIcon: Icons.school_outlined,
+      platform: 'Android',
+      statusLabel: 'Selesai',
     ),
   ];
 
@@ -409,10 +435,12 @@ class PortfolioData {
     SkillGroup(
       index: '01',
       title: 'Mobile Dev',
+      icon: Icons.smartphone,
+      description: 'Membangun aplikasi mobile lintas platform dengan Flutter.',
       items: [
         'Flutter',
         'Dart',
-        'BLoC',
+        'BLoC / Cubit',
         'Provider',
         'REST API (Dio)',
         'Firebase',
@@ -422,12 +450,72 @@ class PortfolioData {
     SkillGroup(
       index: '02',
       title: 'Architecture',
-      items: ['Clean Architecture', 'MVVM', 'Repository Pattern'],
+      icon: Icons.architecture,
+      description:
+          'Menerapkan pola arsitektur agar kode terstruktur dan mudah diuji.',
+      items: [
+        'Clean Architecture',
+        'MVVM',
+        'Repository Pattern',
+        'Use Case Pattern',
+      ],
     ),
     SkillGroup(
       index: '03',
-      title: 'Tools',
-      items: ['Git', 'Figma', 'Postman', 'Android Studio'],
+      title: 'Backend & Database',
+      icon: Icons.storage,
+      description:
+          'Integrasi API dan penyimpanan data untuk kebutuhan aplikasi.',
+      items: [
+        'REST API (Dio)',
+        'Firebase Auth',
+        'Firestore',
+        'FCM',
+        'MySQL',
+        'SQLite',
+      ],
+    ),
+    SkillGroup(
+      index: '04',
+      title: 'Tools & Workflow',
+      icon: Icons.build_outlined,
+      description:
+          'Perangkat kerja sehari-hari untuk development dan kolaborasi tim.',
+      items: [
+        'Git',
+        'Figma',
+        'Postman',
+        'Insomnia',
+        'VS Code',
+        'Android Studio',
+      ],
+    ),
+    SkillGroup(
+      index: '05',
+      title: 'Design & Multimedia',
+      icon: Icons.palette_outlined,
+      description:
+          'Kemampuan pendukung untuk kebutuhan asset visual dan konten.',
+      items: [
+        'Adobe Photoshop',
+        'Illustrator',
+        'Premiere Pro',
+        'After Effects',
+        'Canva',
+        'CapCut',
+      ],
+    ),
+    SkillGroup(
+      index: '06',
+      title: 'Soft Skill',
+      icon: Icons.groups_2_outlined,
+      description: 'Kemampuan non-teknis yang mendukung kerja tim sehari-hari.',
+      items: [
+        'Problem Solving',
+        'Kolaborasi Tim',
+        'Adaptif',
+        'Manajemen Waktu',
+      ],
     ),
   ];
 }
