@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/portfolio_data.dart';
 import '../theme/app_theme.dart';
@@ -28,6 +29,29 @@ class ProjectDetailPage extends StatelessWidget {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
+
+  /// Menyalin URL portofolio ke clipboard.
+  ///
+  /// CATATAN JUJUR: karena aplikasi ini pakai Navigator biasa (bukan
+  /// named routes / URL routing per halaman seperti go_router), alamat
+  /// browser TIDAK berubah saat pindah ke halaman detail project. Jadi
+  /// tombol ini menyalin link ke SITUS PORTOFOLIO secara umum, BUKAN
+  /// deep-link langsung ke project spesifik ini. Kalau nanti mau upgrade
+  /// ke deep-link per project (mis. domain.com/#/project/p01), perlu
+  /// setup package `go_router` dan konfigurasi URL strategy terpisah.
+  // Future<void> _copyLink(BuildContext context) async {
+  //   final link = Uri.base.toString();
+  //   await Clipboard.setData(ClipboardData(text: link));
+  //   if (context.mounted) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Link portofolio disalin: $link'),
+  //         backgroundColor: AppColors.black,
+  //         duration: const Duration(seconds: 2),
+  //       ),
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -99,24 +123,69 @@ class ProjectDetailPage extends StatelessWidget {
     );
   }
 
-  // --- HERO: kategori, judul, ringkasan, meta info ---
+  // --- HERO: icon, kategori, judul, ringkasan, badge status/platform, meta info ---
   Widget _buildHero(BuildContext context) {
+    final isMobile =
+        MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
+
+    final titleBlock = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IndexBadge('${project.index} — ${project.category.toUpperCase()}'),
+        const SizedBox(height: AppSpacing.md),
+        Text(project.title.toUpperCase(),
+            style: AppTextStyles.heroTitle(context)),
+      ],
+    );
+
     return SectionWrapper(
       child: SizedBox(
         width: double.infinity,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            IndexBadge('${project.index} — ${project.category.toUpperCase()}'),
-            const SizedBox(height: AppSpacing.md),
-            Text(project.title.toUpperCase(),
-                style: AppTextStyles.heroTitle(context)),
+            // Icon box di samping judul (desktop) / di atas judul (mobile).
+            // Sengaja pakai icon outline sederhana ber-border, BUKAN
+            // ilustrasi emoji warna-warni, supaya konsisten dengan gaya
+            // Swiss style minimal di seluruh situs.
+            isMobile
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _heroIconBox(),
+                      const SizedBox(height: AppSpacing.md),
+                      titleBlock,
+                    ],
+                  )
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _heroIconBox(),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(child: titleBlock),
+                    ],
+                  ),
             const SizedBox(height: AppSpacing.md),
             Container(width: 80, height: 3, color: AppColors.accent),
             const SizedBox(height: AppSpacing.md),
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 640),
               child: Text(project.overview, style: AppTextStyles.body),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            // Badge status & platform. CATATAN JUJUR: platform cuma
+            // "Android" (sesuai CV yang sebut build APK untuk testing),
+            // bukan klaim iOS/Web yang tidak pernah dikerjakan.
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                _statusBadge(
+                    Icons.check_circle, project.statusLabel, AppColors.accent),
+                _statusBadge(
+                    Icons.android, project.platform, AppColors.textSecondary),
+              ],
             ),
             const SizedBox(height: AppSpacing.lg),
             Wrap(
@@ -131,6 +200,32 @@ class ProjectDetailPage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _heroIconBox() {
+    return Container(
+      width: 64,
+      height: 64,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.borderLight, width: 2),
+      ),
+      child: Icon(project.heroIcon, color: AppColors.accent, size: 30),
+    );
+  }
+
+  Widget _statusBadge(IconData icon, String label, Color color) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: color),
+        const SizedBox(width: 6),
+        Text(
+          label.toUpperCase(),
+          style: AppTextStyles.label.copyWith(color: color),
+        ),
+      ],
     );
   }
 
@@ -161,7 +256,8 @@ class ProjectDetailPage extends StatelessWidget {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: project.mockups.length,
-                separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.md),
+                separatorBuilder: (_, __) =>
+                    const SizedBox(width: AppSpacing.md),
                 itemBuilder: (context, i) =>
                     _buildMockupPlaceholder(project.mockups[i]),
               ),
@@ -215,7 +311,7 @@ class ProjectDetailPage extends StatelessWidget {
           ),
           const Spacer(),
           Icon(Icons.smartphone,
-              color: AppColors.textSecondary.withOpacity(0.4), size: 36),
+              color: AppColors.textSecondary.withValues(alpha: 0.4), size: 36),
           const SizedBox(height: AppSpacing.xs),
           Text(
             'MOCKUP\nBELUM DITAMBAHKAN',
@@ -238,7 +334,8 @@ class ProjectDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('PROBLEM & SOLUTION', style: AppTextStyles.sectionTitle(context)),
+            Text('PROBLEM & SOLUTION',
+                style: AppTextStyles.sectionTitle(context)),
             const SizedBox(height: AppSpacing.lg),
             isMobile
                 ? Column(
@@ -385,7 +482,8 @@ class ProjectDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('TIM & KOLABORASI', style: AppTextStyles.sectionTitle(context)),
+            Text('TIM & KOLABORASI',
+                style: AppTextStyles.sectionTitle(context)),
             const SizedBox(height: AppSpacing.lg),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -420,7 +518,8 @@ class ProjectDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('RELATED PROJECTS', style: AppTextStyles.sectionTitle(context)),
+            Text('RELATED PROJECTS',
+                style: AppTextStyles.sectionTitle(context)),
             const SizedBox(height: AppSpacing.lg),
             isMobile
                 ? Column(
@@ -499,7 +598,8 @@ class ProjectDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('IMPLEMENTASI TEKNIS', style: AppTextStyles.sectionTitle(context)),
+            Text('IMPLEMENTASI TEKNIS',
+                style: AppTextStyles.sectionTitle(context)),
             const SizedBox(height: AppSpacing.lg),
             const ThinRule(),
             for (var i = 0; i < project.implementationPoints.length; i++)
@@ -576,48 +676,76 @@ class ProjectDetailPage extends StatelessWidget {
     );
   }
 
-  // --- FOOTER CTA ---
+  // --- AKSES PROJECT (dulu "Footer CTA") ---
+  // Hanya menampilkan aksi yang BENAR-BENAR relevan untuk project magang
+  // internal: GitHub (sumber kode asli) dan Salin Link (fitur netral,
+  // tidak butuh klaim publikasi). Tombol "App Store"/"Play Store"/"Live
+  // Demo" sengaja TIDAK ditambahkan karena app ini tidak dipublish ke
+  // toko aplikasi -- mencantumkannya akan jadi klaim palsu.
   Widget _buildFooterCta(BuildContext context) {
     return SectionWrapper(
       showBottomDivider: false,
       child: SizedBox(
         width: double.infinity,
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: [
-              ElevatedButton(
-                onPressed: () => _openUrl(project.githubUrl),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.black,
-                  foregroundColor: Colors.white,
-                  shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  elevation: 0,
-                ),
-                child: Text('VIEW ON GITHUB',
-                    style: AppTextStyles.button.copyWith(color: Colors.white)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('AKSES PROJECT', style: AppTextStyles.sectionTitle(context)),
+            const SizedBox(height: AppSpacing.lg),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => _openUrl(project.githubUrl),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.black,
+                      foregroundColor: Colors.white,
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 16),
+                      elevation: 0,
+                    ),
+                    child: Text('VIEW ON GITHUB',
+                        style:
+                            AppTextStyles.button.copyWith(color: Colors.white)),
+                  ),
+                  // OutlinedButton.icon(
+                  //   onPressed: () => _copyLink(context),
+                  //   icon: const Icon(Icons.link, size: 18, color: AppColors.black),
+                  //   label: Text('SALIN LINK',
+                  //       style: AppTextStyles.button
+                  //           .copyWith(color: AppColors.black)),
+                  //   style: OutlinedButton.styleFrom(
+                  //     foregroundColor: AppColors.black,
+                  //     side: const BorderSide(color: AppColors.black),
+                  //     shape: const RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.zero),
+                  //     padding: const EdgeInsets.symmetric(
+                  //         horizontal: 24, vertical: 16),
+                  //   ),
+                  // ),
+                  OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.black,
+                      side: const BorderSide(color: AppColors.black),
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 16),
+                    ),
+                    child: Text('BACK TO PROJECTS',
+                        style: AppTextStyles.button
+                            .copyWith(color: AppColors.black)),
+                  ),
+                ],
               ),
-              OutlinedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.black,
-                  side: const BorderSide(color: AppColors.black),
-                  shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                ),
-                child: Text('BACK TO PROJECTS',
-                    style:
-                        AppTextStyles.button.copyWith(color: AppColors.black)),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
