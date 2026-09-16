@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../models/portfolio_data.dart';
+import '../data/portfolio_data.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_wrapper.dart';
 
@@ -39,19 +39,19 @@ class ProjectDetailPage extends StatelessWidget {
   /// deep-link langsung ke project spesifik ini. Kalau nanti mau upgrade
   /// ke deep-link per project (mis. domain.com/#/project/p01), perlu
   /// setup package `go_router` dan konfigurasi URL strategy terpisah.
-  // Future<void> _copyLink(BuildContext context) async {
-  //   final link = Uri.base.toString();
-  //   await Clipboard.setData(ClipboardData(text: link));
-  //   if (context.mounted) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Link portofolio disalin: $link'),
-  //         backgroundColor: AppColors.black,
-  //         duration: const Duration(seconds: 2),
-  //       ),
-  //     );
-  //   }
-  // }
+  Future<void> _copyLink(BuildContext context) async {
+    final link = Uri.base.toString();
+    await Clipboard.setData(ClipboardData(text: link));
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Link portofolio disalin: $link'),
+          backgroundColor: AppColors.cardBackground,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +65,7 @@ class ProjectDetailPage extends StatelessWidget {
               _buildTopBar(context),
               _buildHero(context),
               _buildProblemSolutionSection(context),
+              _buildKeyMetricsSection(context),
               _buildMockupGallery(context),
               _buildKeyFeaturesSection(context),
               _buildImplementationSection(context),
@@ -82,8 +83,15 @@ class ProjectDetailPage extends StatelessWidget {
 
   // --- TOP BAR: tombol kembali ---
   Widget _buildTopBar(BuildContext context) {
-    final isMobile =
-        MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
+    final double horizontalPadding;
+    if (context.isCompact) {
+      horizontalPadding = AppSpacing.md;
+    } else if (context.isMedium) {
+      horizontalPadding = AppSpacing.lg;
+    } else {
+      horizontalPadding = AppSpacing.xl;
+    }
+
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -95,8 +103,8 @@ class ProjectDetailPage extends StatelessWidget {
               const BoxConstraints(maxWidth: AppSpacing.maxContentWidth),
           child: Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? AppSpacing.md : AppSpacing.xl,
-              vertical: AppSpacing.sm,
+              horizontal: horizontalPadding,
+              vertical: AppSpacing.xs,
             ),
             child: SizedBox(
               width: double.infinity,
@@ -104,15 +112,25 @@ class ProjectDetailPage extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: InkWell(
                   onTap: () => Navigator.of(context).pop(),
-                  hoverColor: Colors.transparent,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.arrow_back,
-                          size: 18, color: AppColors.black),
-                      const SizedBox(width: 8),
-                      Text('BACK TO PROJECTS', style: AppTextStyles.navLink),
-                    ],
+                  borderRadius: BorderRadius.circular(2),
+                  hoverColor: AppColors.accent.withValues(alpha: 0.12),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 44),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 10,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.arrow_back,
+                              size: 18, color: AppColors.white),
+                          const SizedBox(width: 8),
+                          Text('BACK TO PROJECTS', style: AppTextStyles.navLink),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -125,8 +143,7 @@ class ProjectDetailPage extends StatelessWidget {
 
   // --- HERO: icon, kategori, judul, ringkasan, badge status/platform, meta info ---
   Widget _buildHero(BuildContext context) {
-    final isMobile =
-        MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
+    final isMobile = context.isCompact;
 
     final titleBlock = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,17 +191,21 @@ class ProjectDetailPage extends StatelessWidget {
               child: Text(project.overview, style: AppTextStyles.body),
             ),
             const SizedBox(height: AppSpacing.md),
-            // Badge status & platform. CATATAN JUJUR: platform cuma
-            // "Android" (sesuai CV yang sebut build APK untuk testing),
-            // bukan klaim iOS/Web yang tidak pernah dikerjakan.
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
+            // Progress bar + persentase pengerjaan. PENTING: ini progress
+            // JUJUR (tidak semua project 100% selesai) -- perbaikan dari
+            // asumsi keliru sebelumnya yang menampilkan badge "SELESAI"
+            // untuk semua project tanpa terkecuali.
+            _progressIndicator(),
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                _statusBadge(
-                    Icons.check_circle, project.statusLabel, AppColors.accent),
-                _statusBadge(
-                    Icons.android, project.platform, AppColors.textSecondary),
+                const Icon(Icons.android, size: 16, color: AppColors.textSecondary),
+                const SizedBox(width: 6),
+                Text(
+                  project.platform.toUpperCase(),
+                  style: AppTextStyles.label,
+                ),
               ],
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -195,10 +216,63 @@ class ProjectDetailPage extends StatelessWidget {
                 _metaBlock('ROLE', project.role),
                 _metaBlock('COMPANY', project.company),
                 _metaBlock('DURATION', project.duration),
+                _metaBlock('YEAR', project.year),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Progress bar + label tahap + persentase. Warna bar mengikuti tingkat
+  /// penyelesaian: merah aksen untuk yang masih tahap awal, tetap konsisten
+  /// warna aksen situs (tidak pakai hijau/kuning) supaya selaras Swiss style.
+  Widget _progressIndicator() {
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  project.progressLabel,
+                  style: AppTextStyles.label,
+                ),
+              ),
+              Text(
+                '${project.progressPercent}%',
+                style: AppTextStyles.label.copyWith(color: AppColors.accent),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 320),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Stack(
+                  children: [
+                    Container(
+                        height: 6,
+                        width: constraints.maxWidth,
+                        color: AppColors.borderLight),
+                    Container(
+                      height: 6,
+                      width: constraints.maxWidth *
+                          (project.progressPercent / 100),
+                      color: AppColors.accent,
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -215,20 +289,6 @@ class ProjectDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _statusBadge(IconData icon, String label, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 16, color: color),
-        const SizedBox(width: 6),
-        Text(
-          label.toUpperCase(),
-          style: AppTextStyles.label.copyWith(color: color),
-        ),
-      ],
-    );
-  }
-
   Widget _metaBlock(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,6 +298,74 @@ class ProjectDetailPage extends StatelessWidget {
         const SizedBox(height: 4),
         Text(value, style: AppTextStyles.body),
       ],
+    );
+  }
+
+  // --- KEY RESULTS & METRICS (DAMPAK BISNIS & TEKNIS) ---
+  Widget _buildKeyMetricsSection(BuildContext context) {
+    if (project.metrics.isEmpty) return const SizedBox.shrink();
+
+    final isMobile = context.isCompact;
+    final columns = isMobile ? 1 : 3;
+
+    return SectionWrapper(
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('KEY RESULTS & METRICS',
+                style: AppTextStyles.sectionTitle(context)),
+            const SizedBox(height: AppSpacing.lg),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                const gap = AppSpacing.md;
+                final cardWidth = isMobile
+                    ? constraints.maxWidth
+                    : (constraints.maxWidth - gap * (columns - 1)) / columns;
+
+                return Wrap(
+                  spacing: gap,
+                  runSpacing: gap,
+                  children: project.metrics.map((metric) {
+                    return SizedBox(
+                      width: cardWidth,
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardBackground,
+                          border: Border.all(color: AppColors.borderLight),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                metric.value,
+                                style: AppTextStyles.statNumber.copyWith(
+                                  color: AppColors.accent,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              metric.label.toUpperCase(),
+                              style: AppTextStyles.label,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -326,8 +454,7 @@ class ProjectDetailPage extends StatelessWidget {
 
   // --- PROBLEM & SOLUTION ---
   Widget _buildProblemSolutionSection(BuildContext context) {
-    final isMobile =
-        MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
+    final isMobile = context.isCompact;
     return SectionWrapper(
       child: SizedBox(
         width: double.infinity,
@@ -356,7 +483,7 @@ class ProjectDetailPage extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: _problemSolutionCard(
-                            'SOLUTION', project.solution, AppColors.black),
+                            'SOLUTION', project.solution, AppColors.accentDark),
                       ),
                     ],
                   )
@@ -369,7 +496,7 @@ class ProjectDetailPage extends StatelessWidget {
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
                           child: _problemSolutionCard(
-                              'SOLUTION', project.solution, AppColors.black)),
+                              'SOLUTION', project.solution, AppColors.accentDark)),
                     ],
                   ),
           ],
@@ -403,8 +530,7 @@ class ProjectDetailPage extends StatelessWidget {
 
   // --- KEY FEATURES ---
   Widget _buildKeyFeaturesSection(BuildContext context) {
-    final isMobile =
-        MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
+    final isMobile = context.isCompact;
     final columns = isMobile ? 1 : 2;
 
     return SectionWrapper(
@@ -450,8 +576,10 @@ class ProjectDetailPage extends StatelessWidget {
   Widget _featureCard(FeatureItem feature) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration:
-          BoxDecoration(border: Border.all(color: AppColors.borderLight)),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        border: Border.all(color: AppColors.borderLight),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -509,8 +637,7 @@ class ProjectDetailPage extends StatelessWidget {
         .toList();
     if (related.isEmpty) return const SizedBox.shrink();
 
-    final isMobile =
-        MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
+    final isMobile = context.isCompact;
 
     return SectionWrapper(
       child: SizedBox(
@@ -566,11 +693,14 @@ class ProjectDetailPage extends StatelessWidget {
               builder: (_) => ProjectDetailPage(project: relatedProject)),
         );
       },
-      hoverColor: Colors.transparent,
+      borderRadius: BorderRadius.circular(2),
+      hoverColor: AppColors.accent.withValues(alpha: 0.08),
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
-        decoration:
-            BoxDecoration(border: Border.all(color: AppColors.borderLight)),
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          border: Border.all(color: AppColors.borderLight),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -659,12 +789,14 @@ class ProjectDetailPage extends StatelessWidget {
                     .map((tech) => Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 10),
-                          decoration: Border.all(color: AppColors.black)
-                              .toBoxDecoration(),
+                          decoration: BoxDecoration(
+                            color: AppColors.cardBackground,
+                            border: Border.all(color: AppColors.borderLight),
+                          ),
                           child: Text(
                             tech.toUpperCase(),
                             style: AppTextStyles.button
-                                .copyWith(color: AppColors.black),
+                                .copyWith(color: AppColors.white),
                           ),
                         ))
                     .toList(),
@@ -701,8 +833,8 @@ class ProjectDetailPage extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () => _openUrl(project.githubUrl),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.black,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.accent,
+                      foregroundColor: AppColors.black,
                       shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.zero),
                       padding: const EdgeInsets.symmetric(
@@ -710,29 +842,30 @@ class ProjectDetailPage extends StatelessWidget {
                       elevation: 0,
                     ),
                     child: Text('VIEW ON GITHUB',
-                        style:
-                            AppTextStyles.button.copyWith(color: Colors.white)),
+                        style: AppTextStyles.button
+                            .copyWith(color: AppColors.black)),
                   ),
-                  // OutlinedButton.icon(
-                  //   onPressed: () => _copyLink(context),
-                  //   icon: const Icon(Icons.link, size: 18, color: AppColors.black),
-                  //   label: Text('SALIN LINK',
-                  //       style: AppTextStyles.button
-                  //           .copyWith(color: AppColors.black)),
-                  //   style: OutlinedButton.styleFrom(
-                  //     foregroundColor: AppColors.black,
-                  //     side: const BorderSide(color: AppColors.black),
-                  //     shape: const RoundedRectangleBorder(
-                  //         borderRadius: BorderRadius.zero),
-                  //     padding: const EdgeInsets.symmetric(
-                  //         horizontal: 24, vertical: 16),
-                  //   ),
-                  // ),
+                  OutlinedButton.icon(
+                    onPressed: () => _copyLink(context),
+                    icon: const Icon(Icons.link,
+                        size: 18, color: AppColors.white),
+                    label: Text('SALIN LINK',
+                        style: AppTextStyles.button
+                            .copyWith(color: AppColors.white)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.white,
+                      side: const BorderSide(color: AppColors.borderStrong),
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 16),
+                    ),
+                  ),
                   OutlinedButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.black,
-                      side: const BorderSide(color: AppColors.black),
+                      foregroundColor: AppColors.white,
+                      side: const BorderSide(color: AppColors.borderStrong),
                       shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.zero),
                       padding: const EdgeInsets.symmetric(
@@ -740,7 +873,7 @@ class ProjectDetailPage extends StatelessWidget {
                     ),
                     child: Text('BACK TO PROJECTS',
                         style: AppTextStyles.button
-                            .copyWith(color: AppColors.black)),
+                            .copyWith(color: AppColors.white)),
                   ),
                 ],
               ),
@@ -750,8 +883,4 @@ class ProjectDetailPage extends StatelessWidget {
       ),
     );
   }
-}
-
-extension _BorderToDecoration on Border {
-  BoxDecoration toBoxDecoration() => BoxDecoration(border: this);
 }

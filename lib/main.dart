@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'models/portfolio_data.dart';
+import 'data/portfolio_data.dart';
 import 'theme/app_theme.dart';
 import 'widgets/navbar.dart';
 import 'widgets/hero_section.dart';
@@ -24,7 +24,14 @@ class PortfolioApp extends StatelessWidget {
       title: 'Rahmat Datul Fahri — Flutter Mobile Developer',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        brightness: Brightness.dark,
         scaffoldBackgroundColor: AppColors.background,
+        colorScheme: const ColorScheme.dark(
+          primary: AppColors.accent,
+          secondary: AppColors.accentSecondary,
+          surface: AppColors.cardBackground,
+          onSurface: AppColors.white,
+        ),
         useMaterial3: true,
         splashFactory: NoSplash.splashFactory,
         highlightColor: Colors.transparent,
@@ -97,29 +104,110 @@ class _PortfolioHomePageState extends State<PortfolioHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      endDrawer: _buildMobileDrawer(context),
       body: SafeArea(
         child: Column(
           children: [
             Navbar(onNavTap: _scrollToSection),
             const Divider(height: 1, color: AppColors.borderLight),
             Expanded(
-              child: SingleChildScrollView(
+              child: Scrollbar(
                 controller: _scrollController,
-                child: Column(
-                  children: [
-                    HeroSection(
-                      key: _homeKey,
-                      onViewProjects: () => _scrollToSection(3),
-                      onDownloadCv: _downloadCv,
-                    ),
-                    AboutSection(key: _aboutKey),
-                    ExperienceSection(key: _experienceKey),
-                    ProjectsSection(key: _projectsKey),
-                    SkillsSection(key: _skillsKey),
-                    ContactSection(key: _contactKey),
-                    const Footer(),
-                  ],
+                thumbVisibility: false,
+                interactive: true,
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  child: Column(
+                    children: [
+                      HeroSection(
+                        key: _homeKey,
+                        onViewProjects: () => _scrollToSection(3),
+                        onDownloadCv: _downloadCv,
+                      ),
+                      AboutSection(key: _aboutKey),
+                      ExperienceSection(key: _experienceKey),
+                      ProjectsSection(key: _projectsKey),
+                      SkillsSection(key: _skillsKey),
+                      ContactSection(key: _contactKey),
+                      const Footer(),
+                    ],
+                  ),
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileDrawer(BuildContext context) {
+    return Drawer(
+      backgroundColor: AppColors.background,
+      elevation: 0,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('NAVIGATION', style: AppTextStyles.label),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: AppColors.white),
+                    onPressed: () => Navigator.of(context).pop(),
+                    tooltip: 'Tutup Menu',
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1, color: AppColors.borderLight),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                children: List.generate(PortfolioData.navItems.length, (i) {
+                  final indexStr = (i + 1).toString().padLeft(2, '0');
+                  final title = PortfolioData.navItems[i].toUpperCase();
+                  return InkWell(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      _scrollToSection(i);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: 14,
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            indexStr,
+                            style: AppTextStyles.indexLabel.copyWith(fontSize: 12),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Text(
+                            title,
+                            style: AppTextStyles.cardTitle.copyWith(fontSize: 18),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+            const Divider(height: 1, color: AppColors.borderLight),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Text(
+                '© 2026 ${PortfolioData.fullName}',
+                style: AppTextStyles.label,
               ),
             ),
           ],
