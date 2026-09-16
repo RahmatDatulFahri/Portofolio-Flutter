@@ -8,10 +8,28 @@ dibangun dengan Flutter Web, berdasarkan data CV dan referensi desain Framer.
 ```
 lib/
 ├── main.dart                  # Entry point, merangkai semua section
-├── models/
-│   └── portfolio_data.dart    # Semua data CV (edit di sini jika ada update)
+├── models/                    # Class/struct data (blueprint, bukan isinya)
+│   ├── experience_item.dart
+│   ├── mockup_screen.dart
+│   ├── feature_item.dart
+│   ├── project_item.dart
+│   ├── skill_group.dart
+│   └── models.dart            # barrel export -- 1 pintu impor semua model
+├── data/                      # Isi data aktual (yang perlu kamu EDIT)
+│   ├── profile_data.dart      # nama, bio, kontak, menu navigasi
+│   ├── experiences_data.dart  # data pengalaman magang
+│   ├── skills_data.dart       # data skill (6 kategori)
+│   ├── portfolio_data.dart    # facade -- widget lama tetap panggil ini
+│   └── projects/
+│       ├── app_reporting_system.dart   # 1 file = 1 project
+│       ├── e_albaik_store.dart
+│       ├── app_jhein.dart
+│       ├── tugas_akhir.dart
+│       └── projects_data.dart # gabungkan ke 1 List
 ├── theme/
 │   └── app_theme.dart         # Design tokens: warna, font, spacing
+├── screens/
+│   └── project_detail_page.dart  # Halaman detail per project
 └── widgets/
     ├── navbar.dart
     ├── hero_section.dart
@@ -35,9 +53,20 @@ flutter run -d chrome | flutter run -d web-server --web-port=8080
 
 ## Cara Update Konten
 
-Semua data CV (nama, pengalaman, project, skill, kontak) ada di satu file:
-`lib/models/portfolio_data.dart`. Cukup edit teks di sana, tidak perlu
-menyentuh file widget.
+Data sudah dipecah jadi file-file kecil per topik, supaya gampang dirawat:
+
+| Mau Update Apa?                    | Buka File Ini                                                             |
+| ---------------------------------- | ------------------------------------------------------------------------- |
+| Progress/durasi 1 project tertentu | `lib/data/projects/nama_project.dart`                                     |
+| Tambah project baru                | Buat file baru di `lib/data/projects/`, daftarkan di `projects_data.dart` |
+| Nomor telepon / email / bio        | `lib/data/profile_data.dart`                                              |
+| Data magang/pengalaman kerja       | `lib/data/experiences_data.dart`                                          |
+| Kategori/list skill                | `lib/data/skills_data.dart`                                               |
+| Struktur data (nambah field baru)  | File yang sesuai di `lib/models/`                                         |
+
+**Tidak perlu sentuh file widget** (`hero_section.dart`, dst) sama sekali untuk
+update konten -- semua widget otomatis membaca dari `PortfolioData.xxx` yang
+datanya sekarang berasal dari file-file kecil di atas.
 
 ## Cara Menambahkan Foto Profil Asli
 
