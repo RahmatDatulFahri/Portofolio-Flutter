@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/portfolio_data.dart';
+import '../data/portfolio_data.dart';
 import '../theme/app_theme.dart';
 import 'section_wrapper.dart';
 
@@ -15,14 +15,16 @@ class HeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile =
-        MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
+    final body = switch (context.screenTier) {
+      ScreenTier.compact => _buildCompactBody(context),
+      ScreenTier.medium => _buildMediumBody(context),
+      ScreenTier.expanded => _buildExpandedBody(context),
+    };
 
     return SectionWrapper(
       // SizedBox(width: double.infinity) mencegah Column menyusut ke lebar
       // judul besarnya sendiri lalu ikut ke-tengah oleh Center di
-      // SectionWrapper -- bug yang sama persis ditemukan & diperbaiki di
-      // halaman detail project (lihat project_detail_page.dart).
+      // SectionWrapper.
       child: SizedBox(
         width: double.infinity,
         child: Column(
@@ -35,14 +37,14 @@ class HeroSection extends StatelessWidget {
             // Garis aksen pendek di atas subheading, sesuai referensi desain
             Container(width: 80, height: 3, color: AppColors.accent),
             const SizedBox(height: AppSpacing.md),
-            isMobile ? _buildMobileBody(context) : _buildDesktopBody(context),
+            body,
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDesktopBody(BuildContext context) {
+  Widget _buildExpandedBody(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -51,8 +53,8 @@ class HeroSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                width: 420,
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
                 child:
                     Text(PortfolioData.heroSubtitle, style: AppTextStyles.body),
               ),
@@ -76,7 +78,38 @@ class HeroSection extends StatelessWidget {
     );
   }
 
-  Widget _buildMobileBody(BuildContext context) {
+  Widget _buildMediumBody(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Text(PortfolioData.heroSubtitle, style: AppTextStyles.body),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildButtons(),
+            const SizedBox(width: AppSpacing.md),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  PortfolioData.heroTags,
+                  textAlign: TextAlign.right,
+                  style: AppTextStyles.label,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCompactBody(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -97,27 +130,27 @@ class HeroSection extends StatelessWidget {
         ElevatedButton(
           onPressed: onViewProjects,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.black,
-            foregroundColor: Colors.white,
+            backgroundColor: AppColors.accent,
+            foregroundColor: AppColors.black,
             shape:
                 const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             elevation: 0,
           ),
           child: Text('VIEW PROJECTS',
-              style: AppTextStyles.button.copyWith(color: Colors.white)),
+              style: AppTextStyles.button.copyWith(color: AppColors.black)),
         ),
         OutlinedButton(
           onPressed: onDownloadCv,
           style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.black,
-            side: const BorderSide(color: AppColors.black),
+            foregroundColor: AppColors.white,
+            side: const BorderSide(color: AppColors.borderStrong),
             shape:
                 const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           ),
           child: Text('DOWNLOAD CV',
-              style: AppTextStyles.button.copyWith(color: AppColors.black)),
+              style: AppTextStyles.button.copyWith(color: AppColors.white)),
         ),
       ],
     );

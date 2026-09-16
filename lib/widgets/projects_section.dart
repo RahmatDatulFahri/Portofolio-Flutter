@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../models/portfolio_data.dart';
+import '../data/portfolio_data.dart';
 import '../screens/project_detail_page.dart';
 import '../theme/app_theme.dart';
 import 'section_wrapper.dart';
@@ -34,7 +34,7 @@ class ProjectsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
+    final isMobile = context.isCompact;
     final columns = isMobile ? 1 : 2;
     final rows = _chunkIntoRows(PortfolioData.projects, columns);
 
@@ -53,7 +53,8 @@ class ProjectsSection extends StatelessWidget {
             ),
             child: Column(
               children: [
-                for (final rowItems in rows) _buildRow(context, rowItems, columns),
+                for (final rowItems in rows)
+                  _buildRow(context, rowItems, columns),
               ],
             ),
           ),
@@ -75,15 +76,18 @@ class ProjectsSection extends StatelessWidget {
   /// semua card rata atas (top-aligned), dan masing-masing bebas punya
   /// tinggi sesuai kontennya sendiri -> tidak ada mekanisme yang bisa
   /// "salah hitung" dan menyebabkan overflow.
-  Widget _buildRow(BuildContext context, List<ProjectItem> rowItems, int columns) {
+  Widget _buildRow(
+      BuildContext context, List<ProjectItem> rowItems, int columns) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final project in rowItems) Expanded(child: _buildProjectCard(context, project)),
+        for (final project in rowItems)
+          Expanded(child: _buildProjectCard(context, project)),
         // Baris terakhir dengan jumlah project ganjil di layout 2 kolom:
         // isi slot kosong supaya card tidak melebar penuh 2 kolom.
         if (rowItems.length < columns)
-          for (var i = 0; i < columns - rowItems.length; i++) const Expanded(child: SizedBox()),
+          for (var i = 0; i < columns - rowItems.length; i++)
+            const Expanded(child: SizedBox()),
       ],
     );
   }
@@ -104,6 +108,7 @@ class ProjectsSection extends StatelessWidget {
   Widget _buildProjectCard(BuildContext context, ProjectItem project) {
     return Container(
       decoration: const BoxDecoration(
+        color: AppColors.cardBackground,
         border: Border(
           right: BorderSide(color: AppColors.borderLight),
           bottom: BorderSide(color: AppColors.borderLight),
@@ -122,35 +127,55 @@ class ProjectsSection extends StatelessWidget {
           Text(project.title, style: AppTextStyles.cardTitle),
           const SizedBox(height: 6),
           Text(project.techStack, style: AppTextStyles.label),
-          const SizedBox(height: AppSpacing.md),
-          InkWell(
+          const SizedBox(height: AppSpacing.sm),
+          _buildActionLink(
+            text: 'LIHAT DETAIL',
+            color: AppColors.accent,
             onTap: () => _openDetail(context, project),
-            hoverColor: Colors.transparent,
-            child: Text(
-              'LIHAT DETAIL →',
-              style: AppTextStyles.button.copyWith(
-                color: AppColors.accent,
-                decoration: TextDecoration.underline,
-                decorationColor: AppColors.accent,
-              ),
-            ),
           ),
-          const SizedBox(height: 8),
-          InkWell(
+          _buildActionLink(
+            text: 'VIEW ON GITHUB',
+            color: AppColors.white,
             onTap: () => _openUrl(project.githubUrl),
-            hoverColor: Colors.transparent,
-            child: Text(
-              'VIEW ON GITHUB →',
-              style: AppTextStyles.button.copyWith(
-                color: AppColors.black,
-                decoration: TextDecoration.underline,
-              ),
-            ),
           ),
           // Spacer visual di akhir supaya card pendek tetap punya
           // sedikit "napas" bawah, konsisten dengan padding atas.
           const SizedBox(height: AppSpacing.xs),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionLink({
+    required String text,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(2),
+      hoverColor: color.withValues(alpha: 0.12),
+      child: ConstrainedBox(
+        // Menjamin hit-box minimal 44px tinggi sesuai standar WCAG 2.5.5 / 2.5.8
+        constraints: const BoxConstraints(minHeight: 44),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                text,
+                style: AppTextStyles.button.copyWith(
+                  color: color,
+                  decoration: TextDecoration.underline,
+                  decorationColor: color,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.arrow_forward, size: 14, color: color),
+            ],
+          ),
+        ),
       ),
     );
   }

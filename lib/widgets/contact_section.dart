@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../models/portfolio_data.dart';
+import '../data/portfolio_data.dart';
 import '../theme/app_theme.dart';
 import 'section_wrapper.dart';
 
@@ -38,7 +38,8 @@ class _ContactSectionState extends State<ContactSection> {
       // form ini perlu dihubungkan ke layanan seperti Formspree atau
       // EmailJS agar pesan benar-benar terkirim. Untuk sekarang, ini
       // membuka aplikasi email default sebagai fallback sederhana.
-      final subject = Uri.encodeComponent('Pesan dari Portfolio - ${_nameController.text}');
+      final subject =
+          Uri.encodeComponent('Pesan dari Portfolio - ${_nameController.text}');
       final body = Uri.encodeComponent(
         'Nama: ${_nameController.text}\nEmail: ${_emailController.text}\n\n${_messageController.text}',
       );
@@ -48,7 +49,7 @@ class _ContactSectionState extends State<ContactSection> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
+    final isCompact = context.isCompact;
 
     return SectionWrapper(
       showBottomDivider: false,
@@ -57,18 +58,19 @@ class _ContactSectionState extends State<ContactSection> {
         children: [
           const SectionHeading(index: '06/06', title: "LET'S WORK TOGETHER"),
           const SizedBox(height: AppSpacing.lg),
-          isMobile ? _buildMobileLayout() : _buildDesktopLayout(),
+          isCompact ? _buildMobileLayout() : _buildDesktopLayout(context),
         ],
       ),
     );
   }
 
-  Widget _buildDesktopLayout() {
+  Widget _buildDesktopLayout(BuildContext context) {
+    final gap = context.isMedium ? AppSpacing.lg : AppSpacing.xl;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(child: _buildContactInfo()),
-        const SizedBox(width: AppSpacing.xl),
+        SizedBox(width: gap),
         Expanded(child: _buildForm()),
       ],
     );
@@ -87,17 +89,45 @@ class _ContactSectionState extends State<ContactSection> {
 
   Widget _buildContactInfo() {
     Widget infoLine(String label, String value, {String? url}) {
+      final textWidget = RichText(
+        text: TextSpan(
+          style: AppTextStyles.cardTitle.copyWith(fontSize: 18),
+          children: [
+            TextSpan(
+              text: '$label: ',
+              style: const TextStyle(fontWeight: FontWeight.w400),
+            ),
+            TextSpan(
+              text: value,
+              style: TextStyle(
+                color: url != null ? AppColors.accent : AppColors.white,
+                decoration: url != null ? TextDecoration.underline : TextDecoration.none,
+                decorationColor: AppColors.accent.withValues(alpha: 0.4),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (url == null) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: textWidget,
+        );
+      }
+
       return Padding(
-        padding: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.symmetric(vertical: 2),
         child: InkWell(
-          onTap: url != null ? () => _openUrl(url) : null,
-          child: RichText(
-            text: TextSpan(
-              style: AppTextStyles.cardTitle.copyWith(fontSize: 18),
-              children: [
-                TextSpan(text: '$label: ', style: const TextStyle(fontWeight: FontWeight.w400)),
-                TextSpan(text: value),
-              ],
+          onTap: () => _openUrl(url),
+          borderRadius: BorderRadius.circular(2),
+          hoverColor: AppColors.accent.withValues(alpha: 0.1),
+          child: ConstrainedBox(
+            // Menjamin hit-box minimal 44px tinggi untuk link interaktif
+            constraints: const BoxConstraints(minHeight: 44),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: textWidget,
             ),
           ),
         ),
@@ -107,11 +137,13 @@ class _ContactSectionState extends State<ContactSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        infoLine('Email', PortfolioData.email, url: 'mailto:${PortfolioData.email}'),
+        infoLine('Email', PortfolioData.email,
+            url: 'mailto:${PortfolioData.email}'),
         infoLine('Phone', PortfolioData.phone),
         infoLine('Location', PortfolioData.location),
         infoLine('GitHub', PortfolioData.github, url: PortfolioData.githubUrl),
-        infoLine('LinkedIn', PortfolioData.linkedin, url: PortfolioData.linkedinUrl),
+        infoLine('LinkedIn', PortfolioData.linkedin,
+            url: PortfolioData.linkedinUrl),
       ],
     );
   }
@@ -124,20 +156,24 @@ class _ContactSectionState extends State<ContactSection> {
         children: [
           _buildField('NAME', 'Your name', _nameController),
           const SizedBox(height: AppSpacing.md),
-          _buildField('EMAIL', 'your@email.com', _emailController, isEmail: true),
+          _buildField('EMAIL', 'your@email.com', _emailController,
+              isEmail: true),
           const SizedBox(height: AppSpacing.md),
-          _buildField('MESSAGE', 'Tell me about your app', _messageController, maxLines: 3),
+          _buildField('MESSAGE', 'Tell me about your app', _messageController,
+              maxLines: 3),
           const SizedBox(height: AppSpacing.md),
           ElevatedButton(
             onPressed: _handleSubmit,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.black,
-              foregroundColor: Colors.white,
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              backgroundColor: AppColors.accent,
+              foregroundColor: AppColors.black,
+              shape:
+                  const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               elevation: 0,
             ),
-            child: Text('SEND MESSAGE', style: AppTextStyles.button.copyWith(color: Colors.white)),
+            child: Text('SEND MESSAGE',
+                style: AppTextStyles.button.copyWith(color: AppColors.black)),
           ),
         ],
       ),
@@ -159,7 +195,8 @@ class _ContactSectionState extends State<ContactSection> {
           controller: controller,
           maxLines: maxLines,
           style: AppTextStyles.body,
-          keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
+          keyboardType:
+              isEmail ? TextInputType.emailAddress : TextInputType.text,
           validator: (value) {
             if (value == null || value.trim().isEmpty) return 'Wajib diisi';
             if (isEmail && !value.contains('@')) return 'Email tidak valid';
@@ -168,9 +205,12 @@ class _ContactSectionState extends State<ContactSection> {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: AppTextStyles.bodySecondary,
-            border: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.borderLight)),
-            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.black)),
-            enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.borderLight)),
+            border: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.borderLight)),
+            focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.accent, width: 2)),
+            enabledBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.borderLight)),
             contentPadding: const EdgeInsets.symmetric(vertical: 8),
           ),
         ),

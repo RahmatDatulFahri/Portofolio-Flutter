@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/portfolio_data.dart';
+import '../data/portfolio_data.dart';
 import '../theme/app_theme.dart';
 import 'section_wrapper.dart';
 
@@ -16,12 +16,23 @@ import 'section_wrapper.dart';
 class SkillsSection extends StatelessWidget {
   const SkillsSection({super.key});
 
+  List<List<SkillGroup>> _chunkIntoRows(List<SkillGroup> items, int columns) {
+    final rows = <List<SkillGroup>>[];
+    for (var i = 0; i < items.length; i += columns) {
+      final end = (i + columns > items.length) ? items.length : i + columns;
+      rows.add(items.sublist(i, end));
+    }
+    return rows;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final isMobile = width < AppSpacing.mobileBreakpoint;
-    final isTablet = !isMobile && width < AppSpacing.tabletBreakpoint;
-    final columns = isMobile ? 1 : (isTablet ? 2 : 3);
+    final columns = switch (context.screenTier) {
+      ScreenTier.compact => 1,
+      ScreenTier.medium => 2,
+      ScreenTier.expanded => 3,
+    };
+    final rows = _chunkIntoRows(PortfolioData.skillGroups, columns);
 
     return SectionWrapper(
       child: SizedBox(
@@ -33,65 +44,132 @@ class SkillsSection extends StatelessWidget {
             const SizedBox(height: AppSpacing.lg),
             const ThinRule(),
             const SizedBox(height: AppSpacing.lg),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                const gap = AppSpacing.md;
-                final cardWidth = isMobile
-                    ? constraints.maxWidth
-                    : (constraints.maxWidth - gap * (columns - 1)) / columns;
-
-                return Wrap(
-                  spacing: gap,
-                  runSpacing: gap,
-                  children: PortfolioData.skillGroups.map((group) {
-                    return SizedBox(
-                      width: cardWidth,
-                      child: _skillCard(group),
-                    );
-                  }).toList(),
-                );
-              },
-            ),
+            for (var r = 0; r < rows.length; r++) ...[
+              if (r > 0) const SizedBox(height: AppSpacing.md),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var i = 0; i < rows[r].length; i++) ...[
+                    if (i > 0) const SizedBox(width: AppSpacing.md),
+                    Expanded(child: SkillCard(group: rows[r][i])),
+                  ],
+                  // Mengisi slot kosong jika jumlah card ganjil di baris terakhir
+                  if (rows[r].length < columns)
+                    for (var i = 0; i < columns - rows[r].length; i++) ...[
+                      const SizedBox(width: AppSpacing.md),
+                      const Expanded(child: SizedBox()),
+                    ],
+                ],
+              ),
+            ],
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _skillCard(SkillGroup group) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration:
-          BoxDecoration(border: Border.all(color: AppColors.borderLight)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(group.icon, color: AppColors.accent, size: 26),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  '${group.index} — ${group.title}',
-                  style: AppTextStyles.cardTitle.copyWith(fontSize: 18),
+/// Card skill interaktif dengan tinggi sejajar (equalized height),
+/// chip tag terstruktur ala Swiss design, dan hover state halus.
+class SkillCard extends StatefulWidget {
+  final SkillGroup group;
+
+  const SkillCard({super.key, required this.group});
+
+  @override
+  State<SkillCard> createState() => _SkillCardState();
+}
+
+class _SkillCardState extends State<SkillCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final group = widget.group;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        constraints: const BoxConstraints(minHeight: 260),
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: _isHovered
+              ? AppColors.cardBackground.withValues(alpha: 0.95)
+              : AppColors.cardBackground,
+          border: Border.all(
+            color: _isHovered
+                ? AppColors.accent.withValues(alpha: 0.6)
+                : AppColors.borderLight,
+            width: 1,
+          ),
+          boxShadow: _isHovered
+              ? [
+                  BoxShadow(
+                    color: AppColors.accent.withValues(alpha: 0.08),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(
+                  group.icon,
+                  color: _isHovered ? AppColors.accentHover : AppColors.accent,
+                  size: 24,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(group.description, style: AppTextStyles.bodySecondary),
-          const SizedBox(height: AppSpacing.md),
-          const ThinRule(),
-          const SizedBox(height: AppSpacing.sm),
-          ...group.items.map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(item, style: AppTextStyles.body),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    '${group.index} — ${group.title}',
+                    style: AppTextStyles.cardTitle.copyWith(fontSize: 18),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              group.description,
+              style: AppTextStyles.bodySecondary,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            const ThinRule(),
+            const SizedBox(height: AppSpacing.md),
+            // Tag chips terstruktur ala Swiss High-Tech style
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: group.items.map((item) {
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceElevated.withValues(alpha: 0.7),
+                    border: Border.all(color: AppColors.borderLight),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: Text(
+                    item,
+                    style: AppTextStyles.label.copyWith(
+                      color: AppColors.white,
+                      letterSpacing: 0.4,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 11,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
       ),
     );
   }

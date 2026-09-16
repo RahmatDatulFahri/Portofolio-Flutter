@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/portfolio_data.dart';
+import '../data/portfolio_data.dart';
 import '../theme/app_theme.dart';
 
 /// Navbar sticky: nama di kiri, menu navigasi di kanan.
@@ -22,8 +22,16 @@ class Navbar extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        final isCompactPadding = width < AppSpacing.mobileBreakpoint;
-        // Threshold khusus navbar: di bawah ini, tampilkan hamburger.
+        final double horizontalPadding;
+        if (width < AppSpacing.mobileBreakpoint) {
+          horizontalPadding = AppSpacing.md;
+        } else if (width < AppSpacing.tabletBreakpoint) {
+          horizontalPadding = AppSpacing.lg;
+        } else {
+          horizontalPadding = AppSpacing.xl;
+        }
+
+        // Tampilkan menu penuh pada layar desktop, dan drawer button pada tablet/mobile
         final showFullNav = width >= AppSpacing.tabletBreakpoint;
 
         return Container(
@@ -31,10 +39,11 @@ class Navbar extends StatelessWidget {
           color: AppColors.background,
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: AppSpacing.maxContentWidth),
+              constraints:
+                  const BoxConstraints(maxWidth: AppSpacing.maxContentWidth),
               child: Padding(
                 padding: EdgeInsets.symmetric(
-                  horizontal: isCompactPadding ? AppSpacing.md : AppSpacing.xl,
+                  horizontal: horizontalPadding,
                   vertical: AppSpacing.sm,
                 ),
                 child: Row(
@@ -50,7 +59,10 @@ class Navbar extends StatelessWidget {
                         maxLines: 1,
                       ),
                     ),
-                    if (showFullNav) _buildNavLinks(context) else _buildMobileMenuButton(context),
+                    if (showFullNav)
+                      _buildNavLinks(context)
+                    else
+                      _buildMobileMenuButton(context),
                   ],
                 ),
               ),
@@ -66,15 +78,23 @@ class Navbar extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: List.generate(PortfolioData.navItems.length, (i) {
         return Padding(
-          // Spacing sedikit lebih ringkas (sm, bukan md) supaya ada
-          // headroom ekstra sebelum menyentuh batas overflow lagi.
-          padding: const EdgeInsets.only(left: AppSpacing.sm),
+          padding: const EdgeInsets.only(left: 4),
           child: InkWell(
             onTap: () => onNavTap(i),
-            hoverColor: Colors.transparent,
-            child: Text(
-              PortfolioData.navItems[i].toUpperCase(),
-              style: AppTextStyles.navLink,
+            borderRadius: BorderRadius.circular(2),
+            hoverColor: AppColors.accent.withValues(alpha: 0.12),
+            child: ConstrainedBox(
+              // Menjamin hit-box minimal 44x44px sesuai standar WCAG 2.5.5 / 2.5.8
+              constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                child: Center(
+                  child: Text(
+                    PortfolioData.navItems[i].toUpperCase(),
+                    style: AppTextStyles.navLink,
+                  ),
+                ),
+              ),
             ),
           ),
         );
@@ -83,17 +103,11 @@ class Navbar extends StatelessWidget {
   }
 
   Widget _buildMobileMenuButton(BuildContext context) {
-    return PopupMenuButton<int>(
-      icon: const Icon(Icons.menu, color: AppColors.black),
-      color: AppColors.background,
-      tooltip: 'Menu',
-      onSelected: onNavTap,
-      itemBuilder: (context) => List.generate(
-        PortfolioData.navItems.length,
-        (i) => PopupMenuItem(
-          value: i,
-          child: Text(PortfolioData.navItems[i], style: AppTextStyles.navLink),
-        ),
+    return Builder(
+      builder: (btnContext) => IconButton(
+        icon: const Icon(Icons.menu, color: AppColors.white),
+        tooltip: 'Menu',
+        onPressed: () => Scaffold.of(btnContext).openEndDrawer(),
       ),
     );
   }

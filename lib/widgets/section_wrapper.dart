@@ -18,10 +18,19 @@ class SectionWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final isMobile = width < AppSpacing.mobileBreakpoint;
-    final horizontalPadding = isMobile ? AppSpacing.md : AppSpacing.xl;
-    final verticalPadding = isMobile ? AppSpacing.xl : AppSpacing.xxl;
+    final double horizontalPadding;
+    final double verticalPadding;
+
+    if (context.isCompact) {
+      horizontalPadding = AppSpacing.md;
+      verticalPadding = AppSpacing.xl;
+    } else if (context.isMedium) {
+      horizontalPadding = AppSpacing.lg;
+      verticalPadding = AppSpacing.xl + AppSpacing.sm;
+    } else {
+      horizontalPadding = AppSpacing.xl;
+      verticalPadding = AppSpacing.xxl;
+    }
 
     return Container(
       key: sectionKey,
@@ -35,7 +44,8 @@ class SectionWrapper extends StatelessWidget {
           : null,
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: AppSpacing.maxContentWidth),
+          constraints:
+              const BoxConstraints(maxWidth: AppSpacing.maxContentWidth),
           child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: horizontalPadding,
@@ -71,12 +81,12 @@ class SectionHeading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
+    final isMobile = context.isCompact;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: isMobile ? 48 : 96,
+          width: isMobile ? 48 : 80,
           child: Padding(
             padding: const EdgeInsets.only(top: 8),
             child: IndexBadge(index),

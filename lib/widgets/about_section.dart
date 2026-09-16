@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/portfolio_data.dart';
+import '../data/portfolio_data.dart';
 import '../theme/app_theme.dart';
 import 'section_wrapper.dart';
 
@@ -8,7 +8,7 @@ class AboutSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < AppSpacing.mobileBreakpoint;
+    final isCompact = context.isCompact;
 
     return SectionWrapper(
       child: Column(
@@ -16,27 +16,37 @@ class AboutSection extends StatelessWidget {
         children: [
           const SectionHeading(index: '02/06', title: 'ABOUT'),
           const SizedBox(height: AppSpacing.lg),
-          isMobile ? _buildMobileContent(context) : _buildDesktopContent(context),
+          isCompact
+              ? _buildMobileContent(context)
+              : _buildDesktopContent(context),
         ],
       ),
     );
   }
 
   Widget _buildDesktopContent(BuildContext context) {
+    final isMedium = context.isMedium;
+    final photoWidth = isMedium ? 180.0 : 220.0;
+    final photoHeight = isMedium ? 220.0 : 260.0;
+    final gap = isMedium ? AppSpacing.md : AppSpacing.lg;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildPhotoBox(context),
-        const SizedBox(width: AppSpacing.lg),
+        _buildPhotoBox(context, width: photoWidth, height: photoHeight),
+        SizedBox(width: gap),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(PortfolioData.aboutBio, style: AppTextStyles.body),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 680),
+                child: Text(PortfolioData.aboutBio, style: AppTextStyles.body),
+              ),
               const SizedBox(height: AppSpacing.lg),
               const ThinRule(),
               const SizedBox(height: AppSpacing.md),
-              _buildStatsRow(),
+              _buildStatsRow(context),
             ],
           ),
         ),
@@ -48,23 +58,27 @@ class AboutSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildPhotoBox(context),
+        _buildPhotoBox(context, width: 180, height: 220),
         const SizedBox(height: AppSpacing.md),
         Text(PortfolioData.aboutBio, style: AppTextStyles.body),
         const SizedBox(height: AppSpacing.lg),
         const ThinRule(),
         const SizedBox(height: AppSpacing.md),
-        _buildStatsRow(),
+        _buildStatsRow(context),
       ],
     );
   }
 
   /// Kotak foto profil placeholder. Ganti Container ini dengan
   /// Image.asset('assets/images/profile.jpg') begitu foto asli tersedia.
-  Widget _buildPhotoBox(BuildContext context) {
+  Widget _buildPhotoBox(
+    BuildContext context, {
+    double width = 220,
+    double height = 260,
+  }) {
     return Container(
-      width: 220,
-      height: 260,
+      width: width,
+      height: height,
       decoration: BoxDecoration(
         color: AppColors.cardBackground,
         border: Border.all(color: AppColors.borderLight),
@@ -79,9 +93,9 @@ class AboutSection extends StatelessWidget {
             child: Text(
               'RF',
               style: AppTextStyles.sectionTitle(context).copyWith(
-                    fontSize: 48,
-                    color: AppColors.accent,
-                  ),
+                fontSize: 48,
+                color: AppColors.accent,
+              ),
             ),
           ),
         ],
@@ -89,15 +103,41 @@ class AboutSection extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsRow() {
+  Widget _buildStatsRow(BuildContext context) {
+    // Pada layar ultra-kecil (< 380px), tata statistik dalam Wrap agar tidak berdesakan.
+    final isVerySmall = context.screenWidth < 380;
+    if (isVerySmall) {
+      return Wrap(
+        spacing: AppSpacing.md,
+        runSpacing: AppSpacing.md,
+        children: PortfolioData.aboutStats.map((stat) {
+          return SizedBox(
+            width: 130,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(stat['value']!, style: AppTextStyles.statNumber),
+                ),
+                const SizedBox(height: 4),
+                Text(stat['label']!, style: AppTextStyles.label),
+              ],
+            ),
+          );
+        }).toList(),
+      );
+    }
+
     return Row(
       children: List.generate(PortfolioData.aboutStats.length, (i) {
         final stat = PortfolioData.aboutStats[i];
         final isLast = i == PortfolioData.aboutStats.length - 1;
         return Expanded(
           child: Container(
-            padding: const EdgeInsets.only(right: AppSpacing.md),
-            margin: EdgeInsets.only(right: isLast ? 0 : AppSpacing.md),
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            margin: EdgeInsets.only(right: isLast ? 0 : AppSpacing.sm),
             decoration: BoxDecoration(
               border: Border(
                 right: isLast
@@ -108,7 +148,11 @@ class AboutSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(stat['value']!, style: AppTextStyles.statNumber),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(stat['value']!, style: AppTextStyles.statNumber),
+                ),
                 const SizedBox(height: 4),
                 Text(stat['label']!, style: AppTextStyles.label),
               ],
